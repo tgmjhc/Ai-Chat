@@ -36,9 +36,9 @@
                         <div class="example-prompt-title">💻 Code</div>
                         <div class="example-prompt-text">Help me debug this Python code</div>
                     </div>
-                    <div class="example-prompt" onclick="useExample('Give me ideas for a healthy meal plan')">
-                        <div class="example-prompt-title">🍽️ Plan</div>
-                        <div class="example-prompt-text">Give me ideas for a healthy meal plan</div>
+                    <div class="example-prompt" onclick="document.getElementById('fileInput').click()">
+                        <div class="example-prompt-title">📎 Upload</div>
+                        <div class="example-prompt-text">Upload and analyze any file</div>
                     </div>
                 </div>
             </div>
@@ -52,9 +52,13 @@
 
         <div class="input-area">
             <div class="input-container">
+                <button class="file-upload-btn" onclick="document.getElementById('fileInput').click()" title="Upload file">
+                    📎
+                </button>
+                <input type="file" id="fileInput" style="display: none;" accept="*/*" onchange="handleFileSelect(event)">
                 <textarea 
                     id="userInput" 
-                    placeholder="Type your message here..." 
+                    placeholder="Type your message here or upload a file..." 
                     rows="1"
                 ></textarea>
                 <button id="sendButton" onclick="sendMessage()">
@@ -62,6 +66,7 @@
                     <span>→</span>
                 </button>
             </div>
+            <div id="filePreview" class="file-preview"></div>
         </div>
     </div>
 

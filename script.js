@@ -10,6 +10,8 @@ const settingsModal = document.getElementById('settingsModal');
 let conversationHistory = [];
 let messageCount = 0;
 let apiKey = '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';
+let currentFile = null;
+let currentFileContent = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,6 +38,111 @@ function useExample(text) {
     userInput.value = text;
     userInput.focus();
     sendMessage();
+}
+
+// File handling functions
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    currentFile = file;
+    const filePreview = document.getElementById('filePreview');
+    
+    // Get file icon based on type
+    const fileIcon = getFileIcon(file.type, file.name);
+    
+    // Format file size
+    const fileSize = formatFileSize(file.size);
+    
+    // Read file content
+    readFileContent(file);
+    
+    // Show preview
+    filePreview.innerHTML = `
+        <div class="file-item">
+            <span class="file-icon">${fileIcon}</span>
+            <div class="file-info">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${fileSize}</div>
+            </div>
+            <button class="file-remove" onclick="removeFile()">Remove</button>
+        </div>
+    `;
+    filePreview.classList.add('active');
+}
+
+function getFileIcon(fileType, fileName) {
+    if (fileType.startsWith('image/')) return '🖼️';
+    if (fileType.startsWith('video/')) return '🎥';
+    if (fileType.startsWith('audio/')) return '🎵';
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) return '📝';
+    if (fileType.includes('excel') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) return '📊';
+    if (fileType.includes('powerpoint') || fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) return '📊';
+    if (fileType.includes('zip') || fileType.includes('rar')) return '🗜️';
+    if (fileName.endsWith('.txt')) return '📄';
+    if (fileName.endsWith('.csv')) return '📊';
+    if (fileName.endsWith('.json')) return '{ }';
+    if (fileName.endsWith('.js') || fileName.endsWith('.py') || fileName.endsWith('.java') || 
+        fileName.endsWith('.cpp') || fileName.endsWith('.html') || fileName.endsWith('.css')) return '💻';
+    return '📎';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function readFileContent(file) {
+    const reader = new FileReader();
+    
+    // Handle different file types
+    if (file.type.startsWith('image/')) {
+        reader.onload = function(e) {
+            currentFileContent = {
+                type: 'image',
+                data: e.target.result,
+                mimeType: file.type
+            };
+        };
+        reader.readAsDataURL(file);
+    } else if (file.type.startsWith('text/') || 
+               file.name.endsWith('.txt') || 
+               file.name.endsWith('.md') ||
+               file.name.endsWith('.json') ||
+               file.name.endsWith('.csv') ||
+               file.name.endsWith('.js') ||
+               file.name.endsWith('.py') ||
+               file.name.endsWith('.html') ||
+               file.name.endsWith('.css') ||
+               file.name.endsWith('.java') ||
+               file.name.endsWith('.cpp')) {
+        reader.onload = function(e) {
+            currentFileContent = {
+                type: 'text',
+                data: e.target.result,
+                fileName: file.name
+            };
+        };
+        reader.readAsText(file);
+    } else {
+        // For other file types, inform user
+        currentFileContent = {
+            type: 'unsupported',
+            fileName: file.name,
+            fileType: file.type
+        };
+    }
+}
+
+function removeFile() {
+    currentFile = null;
+    currentFileContent = null;
+    document.getElementById('filePreview').classList.remove('active');
+    document.getElementById('fileInput').value = '';
 }
 
 // Add message to chat
@@ -116,14 +223,34 @@ function formatContent(content) {
 // Send message
 async function sendMessage() {
     const message = userInput.value.trim();
-    if (!message) return;
+    if (!message && !currentFile) return;
 
     // Disable input
     userInput.disabled = true;
     sendButton.disabled = true;
 
+    // Prepare user message with file info
+    let userMessage = message;
+    if (currentFile) {
+        userMessage = message || `I've uploaded a file: ${currentFile.name}`;
+    }
+
     // Add user message
-    addMessage('user', message);
+    addMessage('user', userMessage);
+    
+    // Prepare the message content for API
+    let messageContent = message;
+    
+    // Handle file content
+    if (currentFileContent) {
+        if (currentFileContent.type === 'text') {
+            messageContent += `\n\n[File: ${currentFileContent.fileName}]\n\`\`\`\n${currentFileContent.data}\n\`\`\``;
+        } else if (currentFileContent.type === 'image') {
+            messageContent += `\n\n[I've uploaded an image. Please analyze it and tell me what you see.]`;
+        } else if (currentFileContent.type === 'unsupported') {
+            messageContent += `\n\n[I've uploaded a file named "${currentFileContent.fileName}" of type "${currentFileContent.fileType}". Please provide general information about this file type and what you can help me with.]`;
+        }
+    }
     
     // Prepare messages for Groq API format
     const groqMessages = [
@@ -131,12 +258,15 @@ async function sendMessage() {
             role: msg.role,
             content: msg.content
         })),
-        { role: 'user', content: message }
+        { role: 'user', content: messageContent }
     ];
 
-    // Clear input
+    // Clear input and file
     userInput.value = '';
     userInput.style.height = 'auto';
+    if (currentFile) {
+        removeFile();
+    }
 
     // Show typing indicator
     typingIndicator.classList.add('active');
@@ -176,7 +306,7 @@ async function sendMessage() {
         addMessage('assistant', assistantMessage);
         
         // Update conversation history
-        conversationHistory.push({ role: 'user', content: message });
+        conversationHistory.push({ role: 'user', content: messageContent });
         conversationHistory.push({ role: 'assistant', content: assistantMessage });
 
     } catch (error) {
