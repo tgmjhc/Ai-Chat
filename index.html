@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat - Claude Powered Assistant</title>
-    <meta name="description" content="Your personal AI assistant powered by Claude">
+    <title>AI Chat - Powered by Chrizzed Engine</title>
+    <meta name="description" content="Your personal AI assistant powered by Chrizzed Engine">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">AI Chat</div>
+            <div class="logo">Chrizzed Engine</div>
             <div class="header-info">
-                <div class="model-badge">Claude Sonnet 4</div>
+                <div class="model-badge">Llama 3.3 70B</div>
                 <button class="settings-btn" onclick="openSettings()">⚙️</button>
             </div>
         </div>
 
         <div class="chat-area" id="chatArea">
             <div class="welcome-screen" id="welcomeScreen">
-                <h1 class="welcome-title">Welcome to AI Chat</h1>
-                <p class="welcome-subtitle">Your intelligent assistant powered by Claude. Ask me anything!</p>
+                <h1 class="welcome-title">Welcome to Chrizzed Engine</h1>
+                <p class="welcome-subtitle">Your intelligent AI assistant. Ask me anything!</p>
                 
                 <div class="example-prompts">
                     <div class="example-prompt" onclick="useExample('Explain quantum computing in simple terms')">
@@ -74,9 +74,9 @@
             </div>
             <div class="modal-body">
                 <div class="setting-group">
-                    <label for="apiKey">Anthropic API Key</label>
-                    <input type="password" id="apiKey" placeholder="sk-ant-api03-...">
-                    <small>Get your API key from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></small>
+                    <label for="apiKey">Groq API Key (FREE)</label>
+                    <input type="password" id="apiKey" placeholder="gsk_...">
+                    <small>Get your FREE API key from <a href="https://console.groq.com/" target="_blank">console.groq.com</a></small>
                 </div>
                 <button class="save-btn" onclick="saveSettings()">Save Settings</button>
             </div>

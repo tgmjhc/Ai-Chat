@@ -9,7 +9,7 @@ const settingsModal = document.getElementById('settingsModal');
 // State
 let conversationHistory = [];
 let messageCount = 0;
-let apiKey = localStorage.getItem('anthropic_api_key') || '';
+let apiKey = localStorage.getItem('groq_api_key') || '';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,8 +45,8 @@ function showApiKeyPrompt() {
     errorDiv.className = 'error-message';
     errorDiv.innerHTML = `
         <strong>API Key Required</strong><br><br>
-        To use this chat, you need an Anthropic API key. Click the settings button (⚙️) in the top right to add your key.<br><br>
-        <small>Get your API key from <a href="https://console.anthropic.com/" target="_blank" style="color: var(--accent-primary);">console.anthropic.com</a></small>
+        To use this chat, you need a FREE Groq API key. Click the settings button (⚙️) in the top right to add your key.<br><br>
+        <small>Get your FREE API key from <a href="https://console.groq.com/" target="_blank" style="color: var(--accent-primary);">console.groq.com</a> - No credit card required!</small>
     `;
     chatArea.appendChild(errorDiv);
 }
@@ -65,14 +65,14 @@ function saveSettings() {
     const newApiKey = document.getElementById('apiKey').value.trim();
     if (newApiKey) {
         apiKey = newApiKey;
-        localStorage.setItem('anthropic_api_key', apiKey);
+        localStorage.setItem('groq_api_key', apiKey);
         closeSettings();
         
         // Clear chat and show success message
         const messages = chatArea.querySelectorAll('.message, .error-message');
         messages.forEach(msg => msg.remove());
         
-        addMessage('system', '✅ API key saved successfully! You can now start chatting.');
+        addMessage('system', '✅ API key saved successfully! You can now start chatting with Chrizzed Engine.');
     } else {
         alert('Please enter a valid API key');
     }
@@ -174,7 +174,7 @@ async function sendMessage() {
 
     // Check API key
     if (!apiKey) {
-        addMessage('system', '⚠️ Please add your API key in settings first.');
+        addMessage('system', '⚠️ Please add your FREE Groq API key in settings first.');
         openSettings();
         return;
     }
@@ -185,7 +185,15 @@ async function sendMessage() {
 
     // Add user message
     addMessage('user', message);
-    conversationHistory.push({ role: 'user', content: message });
+    
+    // Prepare messages for Groq API format
+    const groqMessages = [
+        ...conversationHistory.map(msg => ({
+            role: msg.role,
+            content: msg.content
+        })),
+        { role: 'user', content: message }
+    ];
 
     // Clear input
     userInput.value = '';
@@ -196,17 +204,19 @@ async function sendMessage() {
     chatArea.scrollTop = chatArea.scrollHeight;
 
     try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01'
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 4096,
-                messages: conversationHistory
+                model: 'llama-3.3-70b-versatile',
+                messages: groqMessages,
+                temperature: 0.7,
+                max_tokens: 2048,
+                top_p: 1,
+                stream: false
             })
         });
 
@@ -220,14 +230,14 @@ async function sendMessage() {
 
         const data = await response.json();
         
-        // Extract text from response
-        const assistantMessage = data.content
-            .filter(item => item.type === 'text')
-            .map(item => item.text)
-            .join('\n');
+        // Extract text from Groq response
+        const assistantMessage = data.choices[0].message.content;
 
         // Add assistant message
         addMessage('assistant', assistantMessage);
+        
+        // Update conversation history
+        conversationHistory.push({ role: 'user', content: message });
         conversationHistory.push({ role: 'assistant', content: assistantMessage });
 
     } catch (error) {
@@ -237,7 +247,7 @@ async function sendMessage() {
         
         // Handle common errors
         if (error.message.includes('401')) {
-            errorMessage = 'Invalid API key. Please check your API key in settings.';
+            errorMessage = 'Invalid API key. Please check your Groq API key in settings.';
         } else if (error.message.includes('429')) {
             errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
         } else if (error.message.includes('500')) {
@@ -248,7 +258,7 @@ async function sendMessage() {
         errorDiv.className = 'error-message';
         errorDiv.innerHTML = `
             <strong>Error:</strong> ${errorMessage}<br><br>
-            <small>If this persists, check your API key in settings or visit the <a href="https://docs.anthropic.com/" target="_blank" style="color: var(--accent-primary);">Anthropic documentation</a></small>
+            <small>If this persists, check your API key in settings or visit <a href="https://console.groq.com/" target="_blank" style="color: var(--accent-primary);">console.groq.com</a></small>
         `;
         chatArea.appendChild(errorDiv);
         chatArea.scrollTop = chatArea.scrollHeight;
