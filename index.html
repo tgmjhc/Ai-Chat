@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Claude Powered Assistant</title>
+    <meta name="description" content="Your personal AI assistant powered by Claude">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AI Chat</div>
+            <div class="header-info">
+                <div class="model-badge">Claude Sonnet 4</div>
+                <button class="settings-btn" onclick="openSettings()">⚙️</button>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="welcome-screen" id="welcomeScreen">
+                <h1 class="welcome-title">Welcome to AI Chat</h1>
+                <p class="welcome-subtitle">Your intelligent assistant powered by Claude. Ask me anything!</p>
+                
+                <div class="example-prompts">
+                    <div class="example-prompt" onclick="useExample('Explain quantum computing in simple terms')">
+                        <div class="example-prompt-title">🔬 Learn</div>
+                        <div class="example-prompt-text">Explain quantum computing in simple terms</div>
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Write a creative story about a time traveler')">
+                        <div class="example-prompt-title">✍️ Create</div>
+                        <div class="example-prompt-text">Write a creative story about a time traveler</div>
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Help me debug this Python code')">
+                        <div class="example-prompt-title">💻 Code</div>
+                        <div class="example-prompt-text">Help me debug this Python code</div>
+                    </div>
+                    <div class="example-prompt" onclick="useExample('Give me ideas for a healthy meal plan')">
+                        <div class="example-prompt-title">🍽️ Plan</div>
+                        <div class="example-prompt-text">Give me ideas for a healthy meal plan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <textarea 
+                    id="userInput" 
+                    placeholder="Type your message here..." 
+                    rows="1"
+                ></textarea>
+                <button id="sendButton" onclick="sendMessage()">
+                    <span>Send</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-btn" onclick="closeSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="apiKey">Anthropic API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-ant-api03-...">
+                    <small>Get your API key from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></small>
+                </div>
+                <button class="save-btn" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
