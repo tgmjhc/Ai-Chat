@@ -6,15 +6,15 @@ const typingIndicator = document.getElementById('typingIndicator');
 const welcomeScreen = document.getElementById('welcomeScreen');
 const settingsModal = document.getElementById('settingsModal');
 
-// State
+// State - API key is hardcoded for instant use
 let conversationHistory = [];
 let messageCount = 0;
-let apiKey = localStorage.getItem('groq_api_key') || '';
+let apiKey = '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';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     userInput.focus();
-    checkApiKey();
+    // API key is already set, no need to check
 });
 
 // Auto-resize textarea
@@ -30,60 +30,6 @@ userInput.addEventListener('keydown', function(e) {
         sendMessage();
     }
 });
-
-// Check if API key exists
-function checkApiKey() {
-    if (!apiKey) {
-        setTimeout(() => {
-            showApiKeyPrompt();
-        }, 1000);
-    }
-}
-
-function showApiKeyPrompt() {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.innerHTML = `
-        <strong>API Key Required</strong><br><br>
-        To use this chat, you need a FREE Groq API key. Click the settings button (⚙️) in the top right to add your key.<br><br>
-        <small>Get your FREE API key from <a href="https://console.groq.com/" target="_blank" style="color: var(--accent-primary);">console.groq.com</a> - No credit card required!</small>
-    `;
-    chatArea.appendChild(errorDiv);
-}
-
-// Settings Modal Functions
-function openSettings() {
-    settingsModal.classList.add('active');
-    document.getElementById('apiKey').value = apiKey;
-}
-
-function closeSettings() {
-    settingsModal.classList.remove('active');
-}
-
-function saveSettings() {
-    const newApiKey = document.getElementById('apiKey').value.trim();
-    if (newApiKey) {
-        apiKey = newApiKey;
-        localStorage.setItem('groq_api_key', apiKey);
-        closeSettings();
-        
-        // Clear chat and show success message
-        const messages = chatArea.querySelectorAll('.message, .error-message');
-        messages.forEach(msg => msg.remove());
-        
-        addMessage('system', '✅ API key saved successfully! You can now start chatting with Chrizzed Engine.');
-    } else {
-        alert('Please enter a valid API key');
-    }
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    if (event.target === settingsModal) {
-        closeSettings();
-    }
-}
 
 // Example prompts
 function useExample(text) {
@@ -171,13 +117,6 @@ function formatContent(content) {
 async function sendMessage() {
     const message = userInput.value.trim();
     if (!message) return;
-
-    // Check API key
-    if (!apiKey) {
-        addMessage('system', '⚠️ Please add your FREE Groq API key in settings first.');
-        openSettings();
-        return;
-    }
 
     // Disable input
     userInput.disabled = true;
